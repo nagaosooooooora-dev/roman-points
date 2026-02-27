@@ -165,6 +165,19 @@ function getSelectedRange() {
 }
 
 // ---------- Business logic ----------
+
+function sumEarnedThisMonth(txs) {
+  const curMonth = monthKey(todayISO());
+  return txs
+    .filter(
+      (x) =>
+        !x.is_deleted &&
+        x.kind === "earn" &&
+        monthKey(x.tx_date) === curMonth
+    )
+    .reduce((acc, x) => acc + x.amount, 0);
+}
+
 function sumAmounts(txs) {
   return txs.reduce((acc, x) => acc + (x.amount || 0), 0);
 }
@@ -325,6 +338,32 @@ function renderActions(actions, txsAll, optsAll) {
 
   btn.addEventListener("click", async () => {
     await addActionTransaction(a);
+    async function addActionTransaction(action) {
+  const txsAll = await idbGetAll("transactions");
+
+  const earnedThisMonth = sumEarnedThisMonth(txsAll);
+
+  let points = Number(action.points);
+
+  if (earnedThisMonth >= 12500) {
+    points = Math.floor(points / 2);
+  }
+
+  const txObj = {
+    created_ts: Date.now(),
+    tx_date: todayISO(),
+    amount: points,
+    kind: "earn",
+    source_type: "action",
+    source_id: action.id,
+    source_name: action.name,
+    memo: earnedThisMonth >= 12500 ? "（半減適用）" : "",
+    is_deleted: false,
+    deleted_ts: null,
+  };
+
+  await idbAdd("transactions", txObj);
+}
     await refreshAll();
   });
 
