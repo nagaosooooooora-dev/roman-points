@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ロマンポイント</title>
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <header class="header">
+      <h1>ロマンポイント</h1>
+
+      <div class="balance-card">
+        <div class="balance-label">現在残高</div>
+        <div class="balance-value" id="balanceValue">0 RP</div>
+      </div>
+
+      <!-- バックアップ / 復元 -->
+      <div class="row" style="margin-top:10px;">
+        <button id="exportBtn" class="btn">バックアップ（JSON）</button>
+        <button id="importBtn" class="btn btn-ghost">復元（JSON）</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- グラフ -->
+      <section class="card">
+        <div class="row">
+          <h2>残高推移</h2>
+
+          <div class="row">
+            <label for="rangeSelect">期間</label>
+            <select id="rangeSelect">
+              <option value="7">1週間</option>
+              <option value="30" selected>1ヶ月</option>
+              <option value="365">1年</option>
+              <option value="custom">カスタム</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row custom-range" id="customRange" hidden>
+          <div class="row">
+            <label for="startDate">開始</label>
+            <input id="startDate" type="date" />
+          </div>
+
+          <div class="row">
+            <label for="endDate">終了</label>
+            <input id="endDate" type="date" />
+          </div>
+
+          <button id="applyCustomRange" class="btn">適用</button>
+        </div>
+
+        <canvas id="balanceChart" height="120"></canvas>
+      </section>
+
+      <!-- 行動ボタン -->
+      <section class="card">
+        <h2>行動</h2>
+        <div class="actions" id="actionsArea">
+          <!-- JSでボタンを生成 -->
+          <div class="hint">（行動を追加すると、ここにボタンが出ます）</div>
+        </div>
+      </section>
+
+      <!-- 支払い -->
+      <section class="card">
+        <div class="row">
+          <h2>支払い</h2>
+          <button id="togglePayment" class="btn">支払い入力</button>
+        </div>
+
+        <div id="paymentPanel" class="panel" hidden>
+          <div class="row">
+            <label for="paymentAmount">金額（RP）</label>
+            <input
+              id="paymentAmount"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="例：1200"
+            />
+          </div>
+
+          <div class="row">
+            <label for="paymentDate">日付</label>
+            <input id="paymentDate" type="date" />
+          </div>
+
+          <div class="row">
+            <label for="paymentMemo">メモ</label>
+            <input id="paymentMemo" type="text" placeholder="例：ガジェットポーチ" />
+          </div>
+
+          <button id="submitPayment" class="btn btn-danger">支払いを記録（-）</button>
+        </div>
+      </section>
+
+      <!-- 履歴 -->
+      <section class="card">
+        <div class="row">
+          <h2>履歴</h2>
+          <button id="showDeleted" class="btn btn-ghost">削除済みも表示</button>
+        </div>
+
+        <div class="history" id="historyList">
+          <!-- JSで一覧を生成 -->
+          <div class="hint">（ここに履歴が表示されます）</div>
+        </div>
+
+        <!-- 履歴編集パネル -->
+        <div class="panel" id="editPanel" hidden>
+          <h3>選択した履歴を編集</h3>
+
+          <div class="row">
+            <label for="editDate">日付</label>
+            <input id="editDate" type="date" />
+          </div>
+
+          <div class="row">
+            <label for="editMemo">メモ</label>
+            <input id="editMemo" type="text" />
+          </div>
+
+          <div class="row">
+            <button id="saveEdit" class="btn">保存</button>
+            <button id="deleteTx" class="btn btn-danger">削除（論理）</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 行動ボタン管理 -->
+      <section class="card">
+        <h2>行動ボタン管理</h2>
+
+        <div class="panel">
+          <div class="row">
+            <label for="actionName">項目名</label>
+            <input id="actionName" type="text" placeholder="例：減煙（7本以内）" />
+          </div>
+
+          <div class="row">
+            <label for="actionPoints">ポイント</label>
+            <input id="actionPoints" type="number" step="1" placeholder="例：25" />
+          </div>
+
+          <div class="row">
+            <label for="actionLimit">1日の上限</label>
+            <select id="actionLimit">
+              <option value="1">1回</option>
+              <option value="2">2回</option>
+              <option value="3">3回</option>
+              <option value="5">5回</option>
+              <option value="10">10回</option>
+              <option value="inf" selected>無限</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="actionMonthlyLimit">1ヶ月の上限</label>
+            <select id="actionMonthlyLimit">
+              <option value="1">1回</option>
+              <option value="2">2回</option>
+              <option value="3">3回</option>
+              <option value="5">5回</option>
+              <option value="10">10回</option>
+              <option value="20">20回</option>
+              <option value="inf" selected>無限</option>
+            </select>
+          </div>
+
+          <button id="addAction" class="btn">行動を追加</button>
+        </div>
+
+        <div class="actions" id="actionsManageList">
+          <!-- JSで管理一覧を生成 -->
+          <div class="hint">（ここに追加した行動が表示されます：編集/表示切替/削除）</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Chart.js（グラフ用） -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- アプリ本体 -->
+    <script src="./app.js"></script>
+  </body>
+</html>
