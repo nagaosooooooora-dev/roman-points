@@ -17,21 +17,28 @@
         <div class="balance-value" id="balanceValue">0 RP</div>
       </div>
 
-      <!-- バックアップ / 復元 -->
-      <div class="row" style="margin-top:10px;">
-        <button id="exportBtn" class="btn">バックアップ（JSON）</button>
-        <button id="importBtn" class="btn btn-ghost">復元（JSON）</button>
-        <input id="importFile" type="file" accept="application/json" hidden />
-      </div>
-    </header>
+      <!-- ページ切替（ホーム / 目標 / 編集） -->
+      <nav class="topnav" aria-label="ページ切替">
+        <button id="navHome" class="topnav-btn" data-page="home" type="button">ホーム</button>
+        <button id="navGoals" class="topnav-btn" data-page="goals" type="button">目標</button>
+        <button id="navEdit" class="topnav-btn" data-page="edit" type="button">編集</button>
+      </nav>
+</header>
 
-    <main class="main">
-      <!-- グラフ -->
+        <main class="main">
+      <div class="page" id="pageHome">
+<!-- グラフ -->
       <section class="card">
         <div class="row">
           <h2>残高推移</h2>
 
           <div class="row">
+            <label for="viewMode">表示</label>
+            <select id="viewMode">
+              <option value="chart" selected>グラフ</option>
+              <option value="calendar">カレンダー</option>
+            </select>
+
             <label for="rangeSelect">期間</label>
             <select id="rangeSelect">
               <option value="7">1週間</option>
@@ -57,9 +64,23 @@
         </div>
 
         <canvas id="balanceChart" height="120"></canvas>
-      </section>
 
-      <!-- 行動ボタン -->
+        <!-- カレンダービュー -->
+        <div id="calendarView" hidden>
+          <div class="calendar-header" id="calendarHeader">YYYY-MM</div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+
+          <div class="panel" id="dayDetailPanel" hidden>
+            <div class="row" style="justify-content: space-between;">
+              <h3 style="margin:0; font-size:14px;">日別内訳</h3>
+              <button id="closeDayDetail" class="btn btn-ghost">閉じる</button>
+            </div>
+            <div class="hint" id="dayDetailDate" style="margin-top:6px;"></div>
+            <div class="history" id="dayDetailList" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </section>
+<!-- 行動ボタン -->
       <section class="card">
         <h2>行動</h2>
         <div class="actions" id="actionsArea">
@@ -67,8 +88,7 @@
           <div class="hint">（行動を追加すると、ここにボタンが出ます）</div>
         </div>
       </section>
-
-      <!-- 支払い -->
+<!-- 支払い -->
       <section class="card">
         <div class="row">
           <h2>支払い</h2>
@@ -99,9 +119,8 @@
 
           <button id="submitPayment" class="btn btn-danger">支払いを記録（-）</button>
         </div>
-      </section>
-
-      <!-- 履歴 -->
+      
+<!-- 履歴 -->
       <section class="card">
         <div class="row">
           <h2>履歴</h2>
@@ -134,7 +153,74 @@
         </div>
       </section>
 
-      <!-- 行動ボタン管理 -->
+</section>
+      </div>
+
+      <div class="page" id="pageGoals" hidden>
+<!-- 買いたいもの（予測） -->
+      <section class="card">
+        <div class="row">
+          <h2>買いたいもの</h2>
+          <div class="hint">（このままのペースでいつ買える？）</div>
+        </div>
+
+        <div class="row" style="margin-top:8px; justify-content:flex-end;">
+          <button id="clearWishSelectionGoals" class="btn btn-ghost">選択解除</button>
+        </div>
+
+        <div class="history" id="wishList">
+          <div class="hint">（ここに買いたいものが表示されます）</div>
+        </div>
+
+        <div class="panel" id="wishForecastPanel" hidden>
+          <h3 style="margin:0 0 6px; font-size:14px;">予測</h3>
+          <div class="hint" id="wishForecastTitle"></div>
+          <div class="forecast" id="wishForecastBody" style="margin-top:8px;"></div>
+          <div class="hint" style="margin-top:8px;">※ 直近30日平均の獲得ペースから単純予測。月内獲得が12,500RPを超えると半減、月末に残高が10,000RP超なら-5,000RPを加味。</div>
+        </div>
+      </section>
+      </div>
+
+      <div class="page" id="pageEdit" hidden>
+<!-- バックアップ / 復元 -->
+<section class="card">
+  <h2>バックアップ</h2>
+  <div class="row" style="margin-top:10px;">
+    <button id="exportBtn" class="btn">バックアップ（JSON）</button>
+    <button id="importBtn" class="btn btn-ghost">復元（JSON）</button>
+    <input id="importFile" type="file" accept="application/json" hidden />
+  </div>
+</section>
+<!-- 目標管理（買いたいもの） -->
+<section class="card">
+  <div class="row">
+    <h2>目標管理</h2>
+    <div class="hint">（追加・編集・削除）</div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <label for="wishEditName">名前</label>
+      <input id="wishEditName" type="text" placeholder="例：ガジェットポーチ" />
+    </div>
+
+    <div class="row">
+      <label for="wishEditCost">必要ポイント（RP）</label>
+      <input id="wishEditCost" type="number" min="1" step="1" placeholder="例：2800" />
+    </div>
+
+    <div class="row">
+      <button id="saveWish" class="btn">保存（追加/更新）</button>
+      <button id="deleteWish" class="btn btn-danger" disabled>削除</button>
+      <button id="newWish" class="btn btn-ghost">新規</button>
+    </div>
+  </div>
+
+  <div class="history" id="wishManageList">
+    <div class="hint">（ここに目標が表示されます）</div>
+  </div>
+</section>
+<!-- 行動ボタン管理 -->
       <section class="card">
         <h2>行動ボタン管理</h2>
 
@@ -182,6 +268,7 @@
           <div class="hint">（ここに追加した行動が表示されます：編集/表示切替/削除）</div>
         </div>
       </section>
+      </div>
     </main>
 
     <!-- Chart.js（グラフ用） -->
