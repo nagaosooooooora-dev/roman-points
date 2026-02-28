@@ -134,6 +134,21 @@ input, select {
 .hint { color: var(--muted); font-size: 12px; }
 .custom-range { margin-top: 8px; }
 
+/* Chart (make it tall enough on mobile) */
+.chart-wrap {
+  margin-top: 8px;
+  height: 340px;
+}
+
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (min-width: 600px) {
+  .chart-wrap { height: 260px; }
+}
+
 /* Calendar */
 .calendar-header {
   margin-top: 8px;
